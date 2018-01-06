@@ -159,3 +159,151 @@ after importing it to server.js
 * we add attributes id, name, description
 * we add a companyId propery to users to link them with companies
 * json-server resolves the relation and adds nested restful routes to the API e.g. /companies/1/users
+
+Section 4 - Fetching Data from Queries
+
+## Lecture 17 - Nested Queries
+
+* we add CompanyType to Schema much like UserType, having as a ref the resource definition to the json-server. it is a GraphQLObjectType
+* we associate it with UserType. in GraphQL associations are treated in the same way as fields, so we add a field company: to link them.
+* graphQL when a field in the Model Class and in the GrapthQL Type  class have the same name doesnt need to do any resolving. but when they are different e.g Model.companyId Type.company needs resolving. This holds mainly for data associations
+* resolve to implement the association is the following
+			resolve(parentValue, args) {
+				return axios.get(`http://localhost:3000/companies/${parentValue.companyId}`)
+					.then(res => res.data);
+			}
+* in type to type associations the foreign key is in parentValue
+* we form the nested graphql query in the graphiql client
+{
+  user(id: "40") {
+    firstName
+    company {
+      id
+      name
+      description
+    }
+  }
+}
+
+## Lecture 20 - Multiple Root Query Entry Points
+
+* we cannot for a query asking directlly because our root point only to the UserType
+* we add another field to the rRootType in schema. for company. the syntax is the same as for users
+
+## Lecture 21 - Bidirectional Relations
+
+* we want to get the users that work in a company.
+* this relation in a json-server is implemented based on the companyId.
+* we access it with /companies/1/users
+* in schema we add users field in companyTYpe
+* it is an 1:n relationship so we use GraphQLList Class.
+* the resolve function trigger the path from json mentioned before.
+
+## Lecture 23 - Resolve Circular References
+
+* we try to use a variable before it is  defined
+* this is circular reference
+* graphQL solves it by wrapping the fields object in an anonymous arrow function
+
+## Lecture 24 - Query Fragments
+
+* in apps its useful to name our queries like:
+query queryName { ... }
+* we can ask for the same resource multiple times in a graphQL query. but we have to assigne a name to each subquery as the reply is a json object and key values must be distinct. e.g google: company(id: "2") {}
+* to avoid repetition of query object attributes we can use query fragments. fragments are defined for a Type and thei are called in the query as ...fragment e.g.
+
+fragment companyDetails on Company {
+  id
+  name
+  description
+}
+
+    apple: company(id: "1") {
+		...companyDetails
+    users{
+      firstName
+    }
+
+ ## Lecture 25 - Intro to Mutations
+
+ * mutations allows to modify our datastore in graphQL server, add,delete, modify data
+ * mutation sits along with query in the heart of the Schema. query is instance of RootQuery which uses Types to support queries. mutation instantiates Mutations which contains Type operators to to the CUD part of CRUD operations on the datastore. 
+ * in graphQl we specify the fields we will use to create a data record in the store. the mutation syntax is similar to the TYpe defs
+
+
+ ## Lecture 26 - NuNull Fields and Mutations
+
+ * if we wnt to set a argument field as non null we wrap its type with GraphQLNonNull ype: new GraphQLNonNull(GraphQLInt)
+ * resolve function gets its arguments from args (second input object)
+ * our mutation with addUser field complete looks like: 
+
+ const mutation = new GraphQLObjectType({
+	name: 'Mutation',
+	fields: {
+		addUser: {
+			type: UserType,
+			args: {
+				firstName: { type: new GraphQLNonNull(GraphQLString) },
+				age: { type: new GraphQLNonNull(GraphQLInt) },
+				companyId: { type: GraphQLString }
+			},
+			resolve(parentValue, { firstName, age }) {
+				return axios.post('http://localhost:3000/users', { firstName, age })
+					.then(res => res.data);
+			}
+		}
+	}
+});
+
+* we add mutation to our Schema.
+* we invoke mutation from client with
+
+mutation {
+  addUser(firstName: "Stephen", age: 26) {
+    id
+    firstName
+    age
+  }
+}
+
+* we always have to ask for at least one field of the created data type back. e.g id
+
+ ## Lecture 27 - deleteUser  Mutation field
+
+ * result: deleteUser: {
+			type: UserType,
+			args: {
+				id: { type: new GraphQLNonNull(GraphQLString)},
+			},
+			resolve(parentvalue, { id }) {
+				return axios.delete(`http://localhost:3000/users/${id}`)
+					.then(res => res.data);
+			}
+		}
+* json-server doesnt return the deleted record so graphql passes back null
+
+ ## Lecture 28 - editUser  Mutation field
+
+ * http PUT request replaces record
+ * http PATCH request updates only the properties sent inthe request body
+
+ * result: editUser: {
+			type: UserType,
+			args: {
+				id: { type: new GraphQLNonNull(GraphQLString)},
+				firstName: { type: GraphQLString },
+				age: { type: GraphQLInt },
+				companyId: { type: GraphQLString }
+			},
+			resolve(parentValue, args) {
+				return axios.patch(`http://localhost:3000/users/${args.id}`, args)
+					.then(res => res.data);
+			}
+		}
+ * mutation: 
+
+ mutation {
+  editUser(id: "DBXhaPm", firstName: "Bob") {
+    firstName
+  }
+}
