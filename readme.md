@@ -307,3 +307,87 @@ mutation {
     firstName
   }
 }
+
+# Section 5 - GraphQL Ecosystem
+
+## Lecture 29 - Apollo vs Relay
+
+* we would like to start integrating graphQL and integrate it with React Frontend
+* graph is an evolving technology and libraries are changing
+* to see the interface between clients and graphql server we investigate the http request message. the http request payload is: 
+{"query":"{\n  user(id: \"40\") {\n    id,\n    firstName,\n    age\n  }\n}","variables":null,"operationName":null}
+* the request header Content-Type: application/json
+* the http response payload is {"data":{"user":{"id":"40","firstName":"Roulis","age":49}}}
+* the React Client will  have a GraphQLCLient library implementing the GraphQLClient Query using http protocol
+* there are 3 GraphQLClients
+** Lokka: barebone, basic queries, mutations, simple caching
+** Apollo Client: Produced by the team of Metero JS. good balance between feats and complexity
+** Relay: Amazing performance for mobile. Insanely complex. by Facebook. Not for starups. too complex
+* we will choose APollo client for the tradeoffs. but we dont use apollo backend graphql server. we use express-graphql.
+* there is big difference on the syntax between express graphql and apollo. express uses the official syntax according to the Facebook spec.express-graphql is stable
+
+# Section 6 - ClientSide GraphQL
+
+## Lecture 31 - The Next App
+
+* we git clone git@github.com:StephenGrider/Lyrical-GraphQL.git
+* we cd Lyrical-GraphQL
+* we get a ready express graphql server for testing
+* backend offers a webpack stack for react client
+* it uses a mongolab hosted mongodb server
+* we setup our own db in mongolab and set a user
+* we cp the connetion address to server.js mongo_uri string
+* we npm isntall packages from boilerplate project
+* we npm run dev the app and visit localhost:4000, also /graphql works as well
+
+## Lecture 34 - Walk through the Schema
+
+* we use graphiql docs to see the supported queries and mutations
+* we use mutations to populate our mlab db. we check the data. we query the data
+
+## Lecture 35 - Apollo CLient Setup
+
+* we check the client side main js file which is a typical react boilerplate.
+* Between our react app and the backend graphql server are two packages.
+** the apollo provider that wraps the react app. is the glue logic between react app and the apollo store.
+** the apollo store  that stands between frontend and backend. it is a repository of all data coming from the backend. apollo store doesnt know about react app. react provider does the comm.
+* packages are already installed. we import 'apollo-client' and
+extract ApolloProvider from 'react-apollo' in client side index.js
+* we create a new APolloClient (Apollo Store!?!?!)
+* we wrap our react jsx with apollo prover where we pass the client much like a redux store.
+* apollo client constructor get a config object which we leave empty. if we deviate from defaults (like the uri for graphql server) we need to add configuration in the object
+* apollo provider is a react component.
+
+## Lecture 37 - GQL queries in React
+
+* we add a SongList React component .
+* we need to get data from the GQL server to the Component for rendering
+* the flow is -> identify data required -> write query in grapiql for testing -> write query in React component file -> bond query w/ compoennt -> get the data
+* our list needs only the titles of all songs.
+* query tested on graphil
+{ 
+  songs {
+  title
+	}
+}
+* i cannot just throw the query in react component  code. its not javascript. i need a parser . like babel for jsx. 
+* import graphql-taq library as gql in SongList component file
+* out of class i define my query as gql`graphql query code`
+
+const query = gql`
+{ 
+  songs {
+  title
+	}
+}
+`;
+
+## Lecture 38 - Bonding Queries w/ Components
+
+* to bond the query to react component we import graphql from react-apollo.
+* we use redux style syntax to bond the query to component
+export default graphql(query)(SongList);
+* when component is rendered query is issued. when query completes component rerenders
+* in react component render() func we consolelog this.props . we render the page and in browser console we see the props object. in .data in first render it has loading=true. in second render after query completes it has loading=false and a new atribute songs. with the query result. page desnot rerender all only what is changed
+
+
