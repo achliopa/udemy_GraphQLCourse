@@ -390,4 +390,30 @@ export default graphql(query)(SongList);
 * when component is rendered query is issued. when query completes component rerenders
 * in react component render() func we consolelog this.props . we render the page and in browser console we see the props object. in .data in first render it has loading=true. in second render after query completes it has loading=false and a new atribute songs. with the query result. page desnot rerender all only what is changed
 
+# Section 7 - Gotchas w/ Queries in React
 
+## Lecture 39 - Handling Pending Queries
+
+* grapgql library creates the data object in the component props
+* our job is to render a list of songs in the component
+* we add a hlper method to extract songs from props and inject it in jsx code. but when we render songs is undefined.  its not yet available, query is not complete.
+* we use the loading flag.
+* we add the id of the song in the query to satisfy react unique key requirement in list items
+* we add some materialcss styling
+
+## Lecture 41 - Architecture Review
+
+* The data flow detailed is GraphQl Server -> Apollo Store -> Apollo Provider -> Root React Component -> React Component w/Query attached -> React Subcomponents
+* Usually queries are centralized in a components and the data returned are oassed to child presentational components
+* same approach as reedux containers
+* we will use react router to navigate between components
+
+## Lecture 42 - Add React Router
+
+* we add several helpers from react-router.
+* we use hashHistory as graphQL server uses hashHistory instead of browserhistory (?!?)
+* we put IndexROute=SongList in Route=App.. Therefore in App component contstructor we pass children components as props. If Route decides to show IndexRoute component this will be passed as a prop "children"
+
+## Lecture 43 - Create a Song
+
+* we use component state to track changes in form
