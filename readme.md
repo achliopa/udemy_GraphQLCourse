@@ -413,7 +413,85 @@ export default graphql(query)(SongList);
 * we add several helpers from react-router.
 * we use hashHistory as graphQL server uses hashHistory instead of browserhistory (?!?)
 * we put IndexROute=SongList in Route=App.. Therefore in App component contstructor we pass children components as props. If Route decides to show IndexRoute component this will be passed as a prop "children"
-
-## Lecture 43 - Create a Song
-
 * we use component state to track changes in form
+
+# Section 8 - Frontend Mutations
+
+## Lecture 44 - Mutations in React
+
+* we add onSubmit event handler in form and we add the workaround  of react binding it to this object. 
+* onSubmit gets passed the submit event and we prtevent default behaviour to avoid page refresh.
+* we need to add a mutation to persist the data in the backend using graphQL
+* following the aforementioned development flow we test our mutation in graphiql
+* then we ad graphql and gql in the react component. we add the mutation script in the gql like queries using backquotes and we wrap the component with graphql passing the mutation. the problem we are facing it how to pass the title in the gql from the component state object )this.state.title)
+
+## Lecture 45 - Query Params
+
+* we need a way to pass param into mutations. graphql has provision for this into its standar spec.
+* the way to pass params is the same for mutations and queries. we use a special syntax. we name the mutation or query passing the parameter as an argument (sort of function style) : the syntax (for mutation) is: mutation MutationName($param: ParamType) {
+	addSOng(title: $param)
+}
+* we pass the query variable as
+{
+	"param": "Some Value"
+}
+* graphiql supports it so we can test it.
+
+## Lecture 46 - Query Variables in React
+
+* we modify the mutation script in gql to be ready to get the query variable
+mutation AddSong($title: String){
+  addSong(title: $title) {
+    title
+  }
+}
+* in the graphql helper that wraps the component we pass mutation
+* we log the props in onSubmint event handler and we trigger it in browser. we see that a mutate function has been added to props. this is the way to trigger the mutation from our component. we see that it accepts an arguments object. this we will use to pass the title query variable. 
+* the syntax is like:
+
+		this.props.mutate({
+			variables: {
+				title: this.state.title
+			}
+		});
+
+## Lecture 46 - navigating on Successful Mutation
+
+* we add React Links to navigate back and forth the pages
+* we need to make sure that we dont navigate before the mutation finishes. graphql queries throw promises so we add then after mutation call to redirect our user back to '/' on suceessful completion. this is done by hashHistory.push('/') method
+
+## Lecture 48 - Troubleshoot List Fetching
+
+* we see that when we forcefully redirect after addSong mutation the songlist is not updated. we need to refresh the songlist page (an rerun the query) to see the new song.
+* this is a apollo behaviour. when a query is run apollostore is populated with query results whicha are structured. when we mutate and our mutation affects the data. maybe more data are added in the store but are not automatically included in the data structures bound to the react components. 
+* so we rerun the query to fix this (Non elegant)
+
+## Lecture 49 - Refetch Queries
+
+* apollo addresses that by adding another attribute in the mutate function passed in the props. apart from variables we can pass refetchQueries: whish takes an array of objects of the type { query:, variables: } query takes a gql script and variables query variables like the mutation. the syntax for us is 
+
+this.props.mutate({
+			variables: { title: this.state.title },
+			refetchQueries: [{ query }]
+		}).then(()=> hashHistory.push('/'));
+
+## Lecture 50 - Deletion Mutation
+
+* our script tested in graphiql is: 
+
+mutation DeleteSong($id: ID) {
+  deleteSong(id:$id) {
+    id
+  }
+}
+
+* we add a variable in SongList component wrapping it up in gql format
+* we bind it to the component by adding one more graphql(mutation) helper which wraps the graphql(query)(SongList). apollo does not natively support bing mutlitple graphql operations to the component so this is a workaround
+* we add an icon to li song list element, we set an onClick handler. in the handler we call the mutate() function from props. we need to refetchquery to update the list after the mutation like before.
+* finished mutate call: 
+this.props.mutate({ variables: { id }, refetchQueries: [{ query }]})
+	}
+
+# Section 9 - Automatic Data Caching
+
+*cd 
