@@ -1,3 +1,4 @@
+import '../style/style.css'
 import React, { Component } from 'react';
 import gql from 'graphql-tag';
 import { graphql } from 'react-apollo';
@@ -8,7 +9,8 @@ class SongList extends Component {
 
 
 	onSongDelete(id) {
-		this.props.mutate({ variables: { id }, refetchQueries: [{ query }]})
+		this.props.mutate({ variables: { id }})
+			.then(() => this.props.data.refetch());
 	}
 
 	renderSongs() {

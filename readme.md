@@ -489,9 +489,37 @@ mutation DeleteSong($id: ID) {
 * we bind it to the component by adding one more graphql(mutation) helper which wraps the graphql(query)(SongList). apollo does not natively support bing mutlitple graphql operations to the component so this is a workaround
 * we add an icon to li song list element, we set an onClick handler. in the handler we call the mutate() function from props. we need to refetchquery to update the list after the mutation like before.
 * finished mutate call: 
-this.props.mutate({ variables: { id }, refetchQueries: [{ query }]})
+this.props.mutate({ variables: { id }})
 	}
 
 # Section 9 - Automatic Data Caching
 
-*cd 
+## Lecture 53 - Refetching a query
+
+* we use an alternative way to refetch data after mutation by chaining
+this.props.data.refetch() in the promise return callback arrow func
+* we prefer this approach as query is already associated with the component so there is no need to re assosiate it by passing it in the object paramater
+
+## Lecture 54 - CSS Styling
+
+* we want to style the delete icon. we add a stylesheet and we import it.
+* we use flexbot
+
+## Lecture 55 - Show a Particual Song (SongDetail React Component)
+
+* we add a class based component, import it in index.js and add it to the Routes component as ROute. we use restful routing naming conv. wildcard :id is passed in the Component in props.
+
+## Lecture 56 - Fetching Indiv. Records
+
+* we test our query in graphiql
+* our query is 
+
+query SongQuery($id: ID!){ 
+  song(id: $id) {
+    id
+  	title
+	}
+}
+
+* ! after Type says that it is required to provide this argument.
+* we create a new query file wrapping it up in gql and import it in React Comp.
