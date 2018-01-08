@@ -559,8 +559,45 @@ export default graphql(query, {
  * Apollo store keeps internal records of data specified in graphql. these data are added removed and edited but apollo has no knowledge of the ids of the data he has in its containers. 
  * even thogh a mutation in its reply shows the new state of a data container  apollo doesn know what data are they to trigger react rerender.
  * to solve this we need to add ids to the container items in the apollo store. this is done in apollo configuration. then when data change apollo will trigger rerender to the react components that use these data.
- * we pass 	dataIdFromObject: o => o.id in the apolloclient config object
+ * we pass 	a transforming arrow function dataIdFromObject: o => o.id in the apolloclient config object
  * this adds id to all objects in store.
  to make it work we need to use ids to all params and results od queries and mutations. so we modify AddLyricToSong mutation and it workds
  * we can fix song list in that way modifying the add song mutation adding id. we beed to remove refetchQueries from mutate() params
  * we add thunb_up icon to lyric list items and an onClick event handler where we pass the lytric.id to increase the like counter
+
+ # Section 11 - More CLient Side mutations
+
+ ## Lecture 68 - The like mutation
+
+ * we form the mutation in graphiql and test it
+
+ mutation LikeLyric($id: ID!){ 
+  likeLyric(id: $id) {
+  	id
+    likes
+  }
+}
+
+* we follow the drill adding mutation lyric list. also we modify fetchsong query adding likes to return values and weextract this value along the others in lyric list
+* we wrap thumbs and likes in a div and style them with flexbox
+
+## Lecture 71 - Optimistic UI Updates
+
+* to give an instant update making our site appear realtime we use optimistic responses feature from apollo. what actually happens is:
+we call mutation -> guess response -> update ui .... get response -> update ui
+* to implement it in the configuration object we pass in the mutate method we add an extra key optimisticResponse: which contains the mutation with the prediction on the value change. to acheive that we need to add likes as a second argument to the event handler.
+* syntax: 
+
+			optimisticResponse: {
+				__typename: 'Mutation',
+				likeLyric: {
+					id,
+					__typename: 'LyricType',
+					likes: likes + 1
+				}
+			}
+
+## Lecture 73 - BugFix
+
+* LyricCreate mutation doesnt ask for lyrics likes. but likes are requested in the LyricList props. this gives an error when we create a lyric in a song that has already other rendered. 
+* to fix this we add likes in the lyric returned in the mutation.
