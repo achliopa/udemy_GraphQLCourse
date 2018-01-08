@@ -522,4 +522,45 @@ query SongQuery($id: ID!){
 }
 
 * ! after Type says that it is required to provide this argument.
-* we create a new query file wrapping it up in gql and import it in React Comp.
+* we create a new query file wrapping it up in gql and import it in React Detail Comp.
+
+# Section 10 - React router & GraphQL
+
+## Lecture 57 - Integration React Router with GraphQL
+
+* wildcard :id from to property of LInk / react component passes in the linked component( ReactDetail) in the this.props.params object as a string with key id
+* our query needs some query variable to be passed into. unlike the mutation with is manually called query is automatic called. 
+* the solution is to add an object as a second argument to the graphql component wrapper after the query itself. this object takes key option: and passes an arrow function which takes props from graphql and return a query variable extracting the id from the graphql props. graphql intercepts the flow between parent component and child getting the component props and then passing them to the child (ReactDetails). the syntax is like: 
+
+export default graphql(query, {
+	options: (props) => { return { variables: { id: props.params.id } } }
+})(SongDetail);
+
+## Lecture 58 - Watching for Data
+
+* as usual query rfesult is passed in the components props object. we use them to render the title on screen
+* we add a back link and make songs in list clickable(react router + sytling)
+
+## Lecture 60 -  Lyric Creation Form
+
+* we follow the development flow like song create, two points of attention are passing props from component to child component. also reseting the ste using this.setState to clear input
+
+## Lecture 63 - Showing a List of Lyrics
+
+* we create anew class based react component named LyricList and we insert it to SongDetail
+* we have two possible paths . one to add a query to fetch lyrics from backend and then list them. the second is to modify the existing fetchSong adding the lyrics to it. we go for the second solution
+* we modify the query fetchSong adding lyrics{id, title}
+* we pass song.lyrics as a prop from SongDetail to LyricList
+ in the same way like SOngList we render the list of lyrics in LyricList with array map funtion
+ * int he sonddetail page when we create alyric its not automaticly shown in the list.only with page refresh.we could refetch the Query after mutation like in SOngCreate but we will do it different this tume.
+
+ ## Lecture 66 - Identifying Records
+
+ * Apollo store keeps internal records of data specified in graphql. these data are added removed and edited but apollo has no knowledge of the ids of the data he has in its containers. 
+ * even thogh a mutation in its reply shows the new state of a data container  apollo doesn know what data are they to trigger react rerender.
+ * to solve this we need to add ids to the container items in the apollo store. this is done in apollo configuration. then when data change apollo will trigger rerender to the react components that use these data.
+ * we pass 	dataIdFromObject: o => o.id in the apolloclient config object
+ * this adds id to all objects in store.
+ to make it work we need to use ids to all params and results od queries and mutations. so we modify AddLyricToSong mutation and it workds
+ * we can fix song list in that way modifying the add song mutation adding id. we beed to remove refetchQueries from mutate() params
+ * we add thunb_up icon to lyric list items and an onClick event handler where we pass the lytric.id to increase the like counter
