@@ -601,3 +601,102 @@ we call mutation -> guess response -> update ui .... get response -> update ui
 
 * LyricCreate mutation doesnt ask for lyrics likes. but likes are requested in the LyricList props. this gives an error when we create a lyric in a song that has already other rendered. 
 * to fix this we add likes in the lyric returned in the mutation.
+
+# Section 12 - Building from Scratch  an End to End GraphQL Application
+
+## Lecture 75 - App Overview
+
+* we will implement authentication with graphql
+** mutiple pages -> react router
+** user data storage -> mongo db
+** authentication -> passport JS
+** restrict access to data -> ???
+** input validation -> ???
+integrate passport to graphql -> ????
+
+## Lecture 77 - Boilerplate Setup
+
+* git clone git@github.com:StephenGrider/auth-graphql-starter.git
+* npm install
+* complete boilerplate
+** client react root comp
+** server mongo conn
+** server graphql setup
+** server authent. setup (session token)
+** user.js mongoose model w/ authentication
+** server/auth.js passport authentication service + patches to glue it to graphql (read the comments)
+
+## Lecture 78 - Authentication approach
+
+* 2 approaches: Coupled and Decoupled
+** in coupled Appoach graphql is used as a thin layer.
+** it takes all requests (queries/mutations). if they are 
+authentication related it parses them to passport and then forwards the reply making it graphql compatible
+** in that way graphql is used as it meant to be . abstraction layer
+** in decoupled approach passport and graphql are separate. passport handles authentications and once user is authenticated all requests are handled by graphql
+** app is split in 2 parts in decoupled , easier to implement. no interaction between them, no integration issues.
+* we will go with coupled for learning purposes. the hard way.
+
+
+## Lecture 79 - Mlab setup
+
+* the usual drill. we put the db path in MONGO_URI in backend server.js adding an admin user 
+
+## Lecture 80 - User Type
+
+* before we move on with the implementation we need to define schema, types (User) and mutations (signup, login , logout)
+* to define UserType we check our mongoose user model. we dont expose the original password in anycase in graphql. so we dont put it in UserType
+
+## Lecture 81 - Signup Mutation
+
+* we wont place any authentication logic in mutations. graphql is an abstraction thin layer. the logic will be handled by backend helper functions/objects
+* we can do password confirmation of signup entrirely on the frontend with validation.
+* in our resolve function of signup we have 3rd parameter called request. this is the http request object from express.
+* from the resolve function we call the alreday implemented signup method from the auth service (passportjs) in auth.js
+* signup is async returning a promise . we return it to propagate it to graphql resolve() function which is asynchronous as well
+* we form our mutation in graphiql and test it
+
+mutation {
+  signup(email: "test@test.com", password: "password") {
+    email
+  }
+}
+
+* the reply is successful 
+
+{
+  "data": {
+    "signup": {
+      "email": "test@test.com"
+    }
+  }
+}
+
+* we check in mlab and see the collection being populated
+
+## Lecture 84 - The logout Mutation
+
+*  according to passport logout() doc the user the function will logout is inside the express request object in user attribute, so we dont need any search in backend. but we need to extract user first call backend and then return user to satisfy graphql spec regarding return something after an operation
+
+mutation {
+  logout{
+    email
+  }
+}
+
+* reply (as user is in a session toke because of passportjs)
+
+{
+  "data": {
+    "logout": {
+      "email": "test@test.com"
+    }
+  }
+}
+
+* login mutation is almost the same like signup
+
+## Lecture 86 - Checking Authentication Status
+
+
+
