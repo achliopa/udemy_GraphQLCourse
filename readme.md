@@ -698,5 +698,77 @@ mutation {
 
 ## Lecture 86 - Checking Authentication Status
 
+* we implement a user field in root_type to be able to test authentication using graphql query on user. the resolve function makes use of express request object which contians user object if loged in.
+* we test it in graphiql
 
+{
+  user {
+    email
+  }
+}
 
+{
+  "data": {
+    "user": {
+      "email": "test@test.com"
+    }
+  }
+}
+
+* to test authentication we run logout mutation and we rerun the query. the reply is now
+
+{
+  "data": {
+    "user": null
+  }
+}
+
+# Section 13 - Moving Client Side
+
+## Lecture 87 - Client Side Setup
+
+* react app. start react router and apollo client in index.js
+* we initalize apollo client adding the dataIdFromObject propery to identify records in store.
+* we id id field in our usertye in backend as requirement for record identification
+* we wrap our root jsx in ApolloProvider React Component passing the apollo client (Redux style)
+* we structure our app with react router on top wraping Route / (App) that wraping header componet and the component that changes depending on the children prop passed to it.
+
+* when header is loaded depending on the auth status (graphql root query type)
+we show the logout or login buttons. we form our query in graphiql and we place it in gql in a separate file. we folow the drill binding the query to the header compoennt and we console log the result (this.props.data). we see that user is null although we loged in in /graphql  graphiql client.
+
+## Lecture 90 - Including Cookies in graphql requests
+
+* according to graphiql we are authenicated. according to apollo-react e are not.
+* graphiql by default attach queries to request. containing the cookie.
+* in graphql queries sent through the app , apollo by default does not attach the cookies.
+* passport is cookie based authentication
+* to solve this we make use of apollo-client createNetworkInterface method, with defines a custom network interface.
+
+const createNetworkInterface = createNetworkInterface({
+	uri: '/graphql',
+	opts: {
+		credentials: 'same-origin'
+	}
+});
+
+* the config object sets uri  and a credentials param.
+* we insert the networkInterface to ApolloClient config object and test again with success the authentication query
+
+## Lecture 91 - Authentication State
+
+* we implement the header adding some condition logic based on the query result
+* we add Links and event handlers to implement authenticcation mutations and react routing. we implement logout mutation using the normal workflow. however we need to rerender to change header state after mutation completes.
+
+## Lecture 94 - Automatic Component Renderers
+
+* we add refetchQueries in the mutation params object to rerun the auth query trigerring a rerender as react rerenders after a query (refetchQueries: [{ query }])
+
+## Lecture 95 - Login Form Design
+
+* Login Form and SignUp Form are almost identical they will wrap a common react component the AuthForm at render()
+* loginform is passed in the router as a route inside a route (APP), this chains the to properties (assembling the route path) and passed the component for rendering to the parrent component App as a childrens object in props.
+* AuthForm has state to handle the inputs
+* we make login mutation into a parametrical one and we test it in graphiql
+* we bind it to the LoginForm and add the mutate() function into onSubmit event handler. we pass this function as a callback into AuthForm props.
+* in AuthFOrm we decalre its own onSubmit event handler where we call the callback onSubmit passed through react component props.
+* we need to refetch query to trigger a rerender to header so that it reflects the change in auth status.
