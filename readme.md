@@ -786,3 +786,34 @@ we see that message is in res.graphQLErrors[0].message
 ## Lecture 102 - Signup Form
 
 * i copy paste loginform changing only the mutation script and the component name
+
+# Section 14 - Graceful Error Handling
+
+## Lecture 104 - Signup error handling
+
+* same as login error handling . 
+
+## Lecture 105 - Race Conditions
+
+* we want to lanch dashboard page after login or signup
+* the flow we would like to achieve is: login mutation runs -> refetch currentuser query -> redirect user to dashboard -> dashboard checks auth state -> authed? show dashboard , not authed ? kick user out to login
+* redirect can be achieved by .then() in mutate() function
+* problem is that mutate resolve function .then() is executed imideateley after mutation at the same time as refetch query. not after. so its not going to work that way. we cannot even delay dashboard render as async functions are not deterministic. maybe promise.all???
+* realistic flow: associate form with current user query (graphql helper wrapper) -> login mutation runs -> refetch currentuser query ->loginform rerenders w/ current user -> edirect user to dashboard -> dashboard checks auth state -> authed? show dashboard , not authed ? kick user out to login
+* we will make use of the componentWillUpdate(nextProps) React Component lifecycle method to check old and new user. if user was null and now is someone we show dashboard
+* in the lifecycle method:
+** this.props are the old props
+** nextProps are the new props
+* the method is triggered by refetch query
+
+## Lecture 110 - The need for a HOC
+
+* even when we logout we see Dashboard
+* we need to restrict access to Dashboard,ProfilePage, Account settings. unlimited access only to loginForm and Signup Form
+* i want a reusable piece of code to check authentication status that i will use in components i want. like express middleware
+* we will use a react Higher Order Component. 
+* Component + HOC => Enhanced or COmposed Component
+* we implement a HOC as a React Component wrapping it up in an arrow function where we pass the React Componet to be enhanced.
+* we add a render() function in the HOC component where we render the Componned to be enhanced (Wrapped) extractiing our props and passing them into with destructuring.
+* The HOC enhances the Wrapped Component by binding to the graphql query (currentuser) and cheing the returned data. if query has finished loading and there is no user we redirect to login form. this is done in the lifecycle method componentDiDMount().
+* we impoer the HOC in index.js and wrap Dashboard with it. we test to find out that it doesnt work. this is because didMount runs only the first time a component is rendered and not on rerenders (e.g when loging out). to fix this we make use of the compoinetWillUpdate lifecycle method instead.
