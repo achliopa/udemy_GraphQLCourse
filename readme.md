@@ -772,3 +772,17 @@ const createNetworkInterface = createNetworkInterface({
 * we bind it to the LoginForm and add the mutate() function into onSubmit event handler. we pass this function as a callback into AuthForm props.
 * in AuthFOrm we decalre its own onSubmit event handler where we call the callback onSubmit passed through react component props.
 * we need to refetch query to trigger a rerender to header so that it reflects the change in auth status.
+
+## Lecture 100 - Error handling in GraphQl
+
+* mutation replies with error message when inserting wrong credentials. this reply is injected in component props at props.data.errors[0].message. we want to extract it and show it on the form to the user
+* we dont use the props but we go straight to the mutation to solve it the graphql way. we know mutations are async methods returning a promise. we look for errors so we chain a catch(res => {}) in there we launch debugger; to look into this error.
+we see that message is in res.graphQLErrors[0].message
+* if we have multiple errorswe get more entres in the array so we use array.map method to capture them all
+* to communicate the rror list from the mutation back to the componenbt we use the same way we used to pass query variables the other way. component state
+* we initialize it as an empty array as map throws error on null
+* we populate the array in mutation catch function pass it to AuthForm thast does the rendering of the form as a prop
+
+## Lecture 102 - Signup Form
+
+* i copy paste loginform changing only the mutation script and the component name
